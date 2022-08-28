@@ -55,11 +55,9 @@ async function loadIntoTable(url, header, Support, resource, table) {
     const { headers } = await responseHeader.json();
     const { differential } = await responseSupport.json();
 
-    console.log(differential.element);
-
-    differential.element.map((item) => {
-        item.mustSupport && console.log(item.id);
-    });
+    // differential.element.map((item) => {
+    //     item.mustSupport && console.log(item.id);
+    // });
 
     tableHead.innerHTML = "<tr></tr>";
     tableHead.tableBody = "";
@@ -109,10 +107,9 @@ function objectToString(jsons) {
     for (var json of jsons) {
         var result = [];
         for (var i in json) result.push([i, json[i]]);
-
         result.map((item) => {
             html += `<b>${item[0]}</b>:`;
-            html += `${item[1]},　`;
+            html += `${JSON.stringify(item[1])},　`;
         });
     }
     return html;
@@ -120,18 +117,26 @@ function objectToString(jsons) {
 
 //下方展開列
 function expandOpen(expand, row, headers, resource) {
+    console.log(row);
     function ExpanRender() {
-        var html = "";
-        for (const header of headers[resource]) {
-            if (typeof row.resource[header] === "object") {
-                html += `<h5><b>${header}</b></h5>`;
-                const htmlobj = objectToString(row.resource[header]);
-                html += `<p>${htmlobj}</p>`;
-            } else if (typeof row.resource[header] === "string") {
-                html += `<h5><b>${header}</b></h5>`;
-                html += `<p>${row.resource[header]}</p>`;
-            }
-        }
+        var html = `<button onclick="copyButtonFunction()">Copy Json</button>
+        <a id="exportJSON" onclick="downJsonButton(this);" class="btn" download>Download Json</a>
+        <textarea  style="width:100%;height:500px;" id="jsonTextarea" name="jsonTextarea">${JSON.stringify(
+            row,
+            undefined,
+            2
+        )}
+        </textarea>`;
+        // for (const header of headers[resource]) {
+        //     if (typeof row.resource[header] === "object") {
+        //         html += `<h5><b>${header}</b></h5>`;
+        //         const htmlobj = objectToString(row.resource[header]);
+        //         html += `<p>${htmlobj}</p>`;
+        //     } else if (typeof row.resource[header] === "string") {
+        //         html += `<h5><b>${header}</b></h5>`;
+        //         html += `<p>${row.resource[header]}</p>`;
+        //     }
+        // }
         return html;
     }
     const html = ExpanRender();
@@ -149,6 +154,25 @@ function expandOpen(expand, row, headers, resource) {
 //下方展開列
 function showHideRow(row) {
     $("#" + row).toggle();
+}
+
+//複製按鈕
+function copyButtonFunction() {
+    var copyText = document.getElementById("jsonTextarea");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+}
+
+function downJsonButton(el) {
+    var copyText = document.getElementById("jsonTextarea");
+    var data = "text/json;charset=utf-8," + encodeURIComponent(copyText.value);
+
+    //console.log();
+
+    const filename = `${JSON.parse(copyText.value).resource.resourceType}_${JSON.parse(copyText.value).resource.id}.json`;
+    el.setAttribute("href", "data:" + data);
+    el.setAttribute("download", `${filename}`);
 }
 
 loadIntoTable(
