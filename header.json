@@ -1,6 +1,6 @@
 {
     "headers": {
-        "patient": [
+        "Patient": [
             "id",
             "birthDate",
             "gender",
